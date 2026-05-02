@@ -16,8 +16,8 @@ import { resolveAuthProvider } from '@/utils/quota';
 import {
   normalizeRecentRequestAuthIndex,
   normalizeRecentRequestBuckets,
-  normalizeUsageTotal,
   statusBarDataFromRecentRequests,
+  sumRecentRequests,
 } from '@/utils/recentRequests';
 import { formatFileSize } from '@/utils/format';
 import {
@@ -83,10 +83,7 @@ export function AuthFileCard(props: AuthFileCardProps) {
   } = props;
 
   const recentBuckets = normalizeRecentRequestBuckets(file.recent_requests ?? file.recentRequests);
-  const fileStats = {
-    success: normalizeUsageTotal(file.success),
-    failure: normalizeUsageTotal(file.failed),
-  };
+  const fileStats = sumRecentRequests(recentBuckets);
   const isRuntimeOnly = isRuntimeOnlyAuthFile(file);
   const isAistudio = (file.type || '').toLowerCase() === 'aistudio';
   const showModelsButton = !isRuntimeOnly || isAistudio;

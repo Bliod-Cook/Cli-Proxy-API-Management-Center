@@ -2,14 +2,14 @@ import { useCallback, useEffect, useState } from 'react';
 import { useInterval } from '@/hooks/useInterval';
 import { apiKeyUsageApi } from '@/services/api';
 import {
-  normalizeRecentRequestUsageEntry,
+  normalizeRecentRequestBuckets,
   type ApiKeyUsageResponse,
-  type RecentRequestUsageEntry,
+  type RecentRequestBucket,
 } from '@/utils/recentRequests';
 
 const PROVIDER_RECENT_REQUESTS_STALE_TIME_MS = 240_000;
 
-export type ProviderRecentRequests = Map<string, Map<string, RecentRequestUsageEntry>>;
+export type ProviderRecentRequests = Map<string, Map<string, RecentRequestBucket[]>>;
 
 export type UseProviderRecentRequestsOptions = {
   enabled?: boolean;
@@ -36,9 +36,9 @@ const normalizeApiKeyUsageResponse = (payload: ApiKeyUsageResponse): ProviderRec
       return;
     }
 
-    const usageByCompositeKey = new Map<string, RecentRequestUsageEntry>();
-    Object.entries(entries).forEach(([compositeKey, entry]) => {
-      usageByCompositeKey.set(compositeKey, normalizeRecentRequestUsageEntry(entry));
+    const usageByCompositeKey = new Map<string, RecentRequestBucket[]>();
+    Object.entries(entries).forEach(([compositeKey, buckets]) => {
+      usageByCompositeKey.set(compositeKey, normalizeRecentRequestBuckets(buckets));
     });
 
     usageByProvider.set(providerKey, usageByCompositeKey);

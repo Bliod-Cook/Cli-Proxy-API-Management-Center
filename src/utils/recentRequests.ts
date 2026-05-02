@@ -22,24 +22,7 @@ export interface RecentRequestBucket {
   failed: number;
 }
 
-export interface RecentRequestUsageEntry {
-  success: number;
-  failed: number;
-  recentRequests: RecentRequestBucket[];
-}
-
-export type ApiKeyUsageResponse = Record<
-  string,
-  Record<
-    string,
-    {
-      success?: unknown;
-      failed?: unknown;
-      recent_requests?: unknown;
-      recentRequests?: unknown;
-    }
-  >
->;
+export type ApiKeyUsageResponse = Record<string, Record<string, RecentRequestBucket[]>>;
 
 const RECENT_REQUEST_BLOCK_COUNT = 20;
 const RECENT_REQUEST_BLOCK_DURATION_MS = 10 * 60 * 1000;
@@ -48,21 +31,6 @@ const toFiniteNumber = (value: unknown): number => {
   const numberValue = typeof value === 'number' ? value : Number(value);
   return Number.isFinite(numberValue) ? numberValue : 0;
 };
-
-export function normalizeUsageTotal(value: unknown): number {
-  if (typeof value === 'number') {
-    return Number.isFinite(value) ? value : 0;
-  }
-  if (typeof value === 'string') {
-    const trimmed = value.trim();
-    if (!trimmed) {
-      return 0;
-    }
-    const numberValue = Number(trimmed);
-    return Number.isFinite(numberValue) ? numberValue : 0;
-  }
-  return 0;
-}
 
 export function buildRecentRequestCompositeKey(baseUrl: unknown, apiKey: unknown): string {
   const normalizedBaseUrl = String(baseUrl ?? '').trim();
@@ -96,24 +64,6 @@ export function normalizeRecentRequestBuckets(input: unknown): RecentRequestBuck
       failed: toFiniteNumber(record.failed),
     };
   });
-}
-
-export function normalizeRecentRequestUsageEntry(input: unknown): RecentRequestUsageEntry {
-  if (!input || typeof input !== 'object' || Array.isArray(input)) {
-    return {
-      success: 0,
-      failed: 0,
-      recentRequests: [],
-    };
-  }
-
-  const record = input as Record<string, unknown>;
-
-  return {
-    success: normalizeUsageTotal(record.success),
-    failed: normalizeUsageTotal(record.failed),
-    recentRequests: normalizeRecentRequestBuckets(record.recent_requests ?? record.recentRequests),
-  };
 }
 
 export function mergeRecentRequestBucketGroups(
